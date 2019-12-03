@@ -1,32 +1,28 @@
 language: php
-dist: trusty
-
-git:
-  depth: 3
 
 php:
-  - 7.2
+    - 7.2
+    - 7.3
 
 cache:
-  directories:
-    - $HOME/.composer/cache
+    directories:
+        - vendor
+        - $HOME/.composer/cache
 
 env:
-  global:
-    - APPLICATION_ENV=development
-    - APPLICATION_STORE=DE
-
-before_install:
-  - phpenv config-rm xdebug.ini
-  - nvm install 10
+    global:
+        - APPLICATION_ENV=development
+        - APPLICATION_STORE=DE
 
 install:
-  - composer install --no-interaction --prefer-dist --optimize-autoloader
-  - npm install -g git+https://github.com/spryker-sdk/frontend-sniffer.git#semver:^0.2.1
+    - COMPOSER_MEMORY_LIMIT=-1 composer install --no-interaction --prefer-dist
 
 script:
-  - composer cs-check
-  - frontend-sniffer --config ./ --path ../../ --level-restriction core
+    - vendor/bin/phpcs src --standard=vendor/spryker/code-sniffer/Spryker/ruleset.xml
+    - vendor/bin/codecept run --env isolated --coverage-xml
+
+after_success:
+    - vendor/bin/coveralls -vvv
 
 notifications:
-  email: false
+    email: false
